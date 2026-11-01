@@ -29,12 +29,14 @@
   --rl:22px; --rm:14px;
 }
 *{box-sizing:border-box}
-html,body{height:100%;margin:0}
+html{height:100%;margin:0}
+body{min-height:100%;margin:0}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 main{overflow-x:clip}
 button,a,.chip,.btn,.key,label{touch-action:manipulation}
 .btn,.chip,.key,.qk,.mult,.tabs a{-webkit-user-select:none;user-select:none}
 body{background:var(--ink);color:var(--cream);font-family:var(--f-body);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+body.in-game{height:100%}
 body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   background:radial-gradient(circle at 8% -8%,rgba(255,61,127,.22),transparent 38%),radial-gradient(circle at 105% 18%,rgba(51,182,255,.18),transparent 42%),radial-gradient(circle at 50% 118%,rgba(164,99,255,.32),transparent 52%)}
 button{font:inherit;color:inherit}
@@ -1135,7 +1137,7 @@ function suggest(rem,out,left){const r=route(rem,out,left);return r?r.map(lab).j
 
 
 /* ============ Archivio dati (online o locale) ============ */
-const S={mode:'loading',db:null,stale:false,wrote:false,data:{players:{},matches:{},seasons:{},adjust:{},trophies:{}},seen:{}};
+const S={mode:'loading',db:null,stale:false,wrote:false,data:{players:{},matches:{},seasons:{},adjust:{},trophies:{}},seen:{},errors:{},connected:false};
 const ready=()=>S.mode==='local'||S.stale||COLLS.every(k=>S.seen[k]);
 const canEdit=()=>S.mode==='local'||S.mode==='cloud';
 function goLocal(){
@@ -1158,18 +1160,21 @@ async function initStore(){
   let can=null;
   if(user&&typeof user.can==='function'){try{can=await user.can('data.write');}catch(e){can=null;}}
   S.mode=can===false?'cloud-ro':'cloud';
-  const timer=setTimeout(()=>{if(!COLLS.every(k=>S.seen[k]&&S.seen[k]!=='cache')){S.stale=true;scheduleRender();}},10000);
+  const allLive=()=>COLLS.every(k=>S.seen[k]==='live'&&!S.errors[k]);
+  const timer=setTimeout(()=>{if(!allLive()){S.stale=true;scheduleRender();}},10000);
   COLLS.forEach(name=>{
     try{
-      db.collection(name).onSnapshot(snap=>{
+      db.collection(name).onSnapshot({includeMetadataChanges:true},snap=>{
         const m={};
         snap.docs.forEach(d=>{if(d.exists){const v=d.data();if(v&&typeof v==='object')m[d.id]={...v,id:d.id};}});
         S.data[name]=m;
-        S.seen[name]=snap.metadata&&snap.metadata.fromCache?(S.seen[name]==='live'?'live':'cache'):'live';
-        if(COLLS.every(k=>S.seen[k]==='live')){clearTimeout(timer);S.stale=false;}
+        S.seen[name]=snap.metadata&&snap.metadata.fromCache?'cache':'live';
+        delete S.errors[name];
+        if(allLive()){S.connected=true;clearTimeout(timer);S.stale=false;}
+        else if(S.connected)S.stale=true;
         scheduleRender();
-      },err=>{clearTimeout(timer);S.stale=true;S.err=err&&err.code;scheduleRender();});
-    }catch(e){S.stale=true;}
+      },err=>{clearTimeout(timer);S.errors[name]=true;S.seen[name]='error';S.stale=true;S.err=err&&err.code;scheduleRender();});
+    }catch(e){S.errors[name]=true;S.seen[name]='error';S.stale=true;}
   });
   render();
 }
