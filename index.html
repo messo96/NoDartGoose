@@ -12,7 +12,6 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./favicon.png" type="image/png" sizes="64x64">
 <link rel="apple-touch-icon" href="./icons/goose-180.png" sizes="180x180">
-<link rel="preload" as="image" href="./icons/goose-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Unbounded:wght@700;800;900&family=Rubik:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -530,67 +529,12 @@ body.in-game .toast.show{transform:translate(-50%,0)}
   .typed{font-size:36px}
   .dkeys .key{min-height:44px}
 }
-.launch-splash{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;overflow:auto;padding:max(24px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));background:radial-gradient(ellipse at 50% 40%,rgba(164,99,255,.28),transparent 40%),radial-gradient(ellipse at 14% 82%,rgba(255,61,127,.16),transparent 34%),var(--ink);opacity:1;transition:opacity .32s ease}
-.launch-splash::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(135deg,transparent 0 42px,rgba(255,244,227,.018) 43px 44px)}
-.launch-splash[hidden]{display:none}
-.launch-splash.is-leaving{opacity:0;pointer-events:none}
-.launch-splash__content{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;width:min(100%,470px);padding:24px 12px;animation:splash-arrive .62s cubic-bezier(.2,.8,.2,1) both}
-.launch-splash__eyebrow{margin:0 0 12px;color:var(--r3);font-size:12px;font-weight:800;letter-spacing:.22em;text-transform:uppercase}
-.launch-splash__art{width:min(58vw,290px);height:min(58vw,290px);object-fit:contain;border-radius:34px;filter:drop-shadow(0 22px 34px rgba(0,0,0,.4));animation:splash-float 3s ease-in-out infinite}
-.launch-splash__title{margin:16px 0 0;font-family:var(--f-display);font-size:clamp(28px,8vw,42px);line-height:1.15;letter-spacing:-.04em;text-shadow:2px 2px 0 var(--r1),4px 4px 0 var(--r5)}
-.launch-splash__tagline{margin:12px 0 24px;color:var(--muted);font-size:15px}
-.launch-splash__enter{min-height:52px;padding:12px 26px;border:0;border-radius:999px;background:var(--r3);color:var(--ink);font-weight:900;cursor:pointer;box-shadow:0 8px 26px rgba(255,210,63,.18);transition:transform .18s ease,filter .18s ease}
-.launch-splash__enter:hover{transform:translateY(-2px);filter:brightness(1.08)}
-.launch-splash__enter:active{transform:translateY(0)}
-.launch-splash__hint{margin:15px 0 0;color:rgba(188,175,238,.74);font-size:12px}
-@keyframes splash-arrive{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
-@keyframes splash-float{50%{transform:translateY(-7px) rotate(1deg)}}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
 </style>
 </head>
 <body>
-<section id="launchSplash" class="launch-splash" role="dialog" aria-modal="true" aria-labelledby="launchSplashTitle">
-  <div class="launch-splash__content">
-    <p class="launch-splash__eyebrow">Pronti a fare centro?</p>
-    <img class="launch-splash__art" src="./icons/goose-512.png" alt="La mascotte oca di NoDarts Goose" width="512" height="512" fetchpriority="high">
-    <h1 id="launchSplashTitle" class="launch-splash__title">NoDarts Goose</h1>
-    <p class="launch-splash__tagline">La partita sta per cominciare.</p>
-    <button id="launchSplashEnter" class="launch-splash__enter" type="button">Entra nel gioco</button>
-    <p class="launch-splash__hint">Si chiude da sola tra pochi secondi</p>
-  </div>
-</section>
-<script>
-(() => {
-  const splash = document.querySelector("#launchSplash");
-  const enter = document.querySelector("#launchSplashEnter");
-  if (!splash || !enter) return;
-  const dismiss = () => {
-    if (splash.hidden || splash.classList.contains("is-leaving")) return;
-    window.clearTimeout(timer);
-    splash.classList.add("is-leaving");
-    splash.setAttribute("aria-hidden", "true");
-    splash.inert = true;
-    enter.blur();
-    window.setTimeout(() => {
-      splash.hidden = true;
-      splash.remove();
-    }, 340);
-  };
-  const timer = window.setTimeout(dismiss, 3800);
-  enter.addEventListener("click", dismiss);
-  document.addEventListener("keydown", event => {
-    if (splash.hidden || splash.classList.contains("is-leaving")) return;
-    if (event.key === "Escape") dismiss();
-    else if (event.key === "Tab") {
-      event.preventDefault();
-      enter.focus({ preventScroll: true });
-    }
-  });
-  enter.focus({ preventScroll: true });
-})();
-</script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs id="gdefs">
     <linearGradient id="rb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff3d7f"/><stop offset=".2" stop-color="#ff8c2b"/><stop offset=".4" stop-color="#ffd23f"/><stop offset=".6" stop-color="#3ee59a"/><stop offset=".8" stop-color="#33b6ff"/><stop offset="1" stop-color="#a463ff"/></linearGradient>
