@@ -1,11 +1,14 @@
-const CACHE_NAME = "nodarts-goose-v1";
+const CACHE_NAME = "nodarts-goose-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
+  "./favicon.png",
   "./firebase-config.js",
   "./pwa.js",
-  "./icons/goose.svg"
+  "./icons/goose-180.png",
+  "./icons/goose-192.png",
+  "./icons/goose-512.png"
 ];
 
 self.addEventListener("install", event => {

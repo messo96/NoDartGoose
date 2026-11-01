@@ -27,8 +27,8 @@ jobs:
       - name: Prepare static app
         run: |
           mkdir -p _site/icons
-          cp index.html manifest.webmanifest firebase-config.js pwa.js sw.js _site/
-          cp icons/goose.svg _site/icons/
+          cp index.html manifest.webmanifest firebase-config.js pwa.js sw.js favicon.png _site/
+          cp icons/goose-180.png icons/goose-192.png icons/goose-512.png _site/icons/
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
