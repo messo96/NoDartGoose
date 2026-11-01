@@ -16,4 +16,4 @@
 
 ## GitHub Pages
 
-The GitHub Actions workflow publishes the static app on pushes to `master` and the setup branch. It keeps the app on GitHub Pages while Firestore remains the data backend. Pages must be enabled with the Actions source in the repository settings. The app falls back to this browser's local storage while Firebase is unavailable. After deployment, install it from the browser's install control where supported; on iPhone/iPad use Safari's “Aggiungi alla schermata Home”.
+The live app is [NoDarts Goose on GitHub Pages](https://messo96.github.io/NoDartGoose/). GitHub Pages is configured to use Actions; the workflow publishes on pushes to `master` and `messo96-responsive-pwa-firebase`. Firestore remains the data backend. The app falls back to this browser's local storage while Firebase is unavailable. Install it from the browser's install control where supported; on iPhone/iPad use Safari's “Aggiungi alla schermata Home”.
