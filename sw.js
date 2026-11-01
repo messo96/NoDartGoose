@@ -1,4 +1,4 @@
-const CACHE_NAME = "nodarts-goose-v2";
+const CACHE_NAME = "nodarts-goose-v3";
 const APP_SHELL = [
   "./",
   "./index.html",

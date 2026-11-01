@@ -12,6 +12,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./favicon.png" type="image/png" sizes="64x64">
 <link rel="apple-touch-icon" href="./icons/goose-180.png" sizes="180x180">
+<link rel="preload" as="image" href="./icons/goose-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Unbounded:wght@700;800;900&family=Rubik:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -529,12 +530,67 @@ body.in-game .toast.show{transform:translate(-50%,0)}
   .typed{font-size:36px}
   .dkeys .key{min-height:44px}
 }
+.launch-splash{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;overflow:auto;padding:max(24px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));background:radial-gradient(ellipse at 50% 40%,rgba(164,99,255,.28),transparent 40%),radial-gradient(ellipse at 14% 82%,rgba(255,61,127,.16),transparent 34%),var(--ink);opacity:1;transition:opacity .32s ease}
+.launch-splash::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(135deg,transparent 0 42px,rgba(255,244,227,.018) 43px 44px)}
+.launch-splash[hidden]{display:none}
+.launch-splash.is-leaving{opacity:0;pointer-events:none}
+.launch-splash__content{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;width:min(100%,470px);padding:24px 12px;animation:splash-arrive .62s cubic-bezier(.2,.8,.2,1) both}
+.launch-splash__eyebrow{margin:0 0 12px;color:var(--r3);font-size:12px;font-weight:800;letter-spacing:.22em;text-transform:uppercase}
+.launch-splash__art{width:min(58vw,290px);height:min(58vw,290px);object-fit:contain;border-radius:34px;filter:drop-shadow(0 22px 34px rgba(0,0,0,.4));animation:splash-float 3s ease-in-out infinite}
+.launch-splash__title{margin:16px 0 0;font-family:var(--f-display);font-size:clamp(28px,8vw,42px);line-height:1.15;letter-spacing:-.04em;text-shadow:2px 2px 0 var(--r1),4px 4px 0 var(--r5)}
+.launch-splash__tagline{margin:12px 0 24px;color:var(--muted);font-size:15px}
+.launch-splash__enter{min-height:52px;padding:12px 26px;border:0;border-radius:999px;background:var(--r3);color:var(--ink);font-weight:900;cursor:pointer;box-shadow:0 8px 26px rgba(255,210,63,.18);transition:transform .18s ease,filter .18s ease}
+.launch-splash__enter:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.launch-splash__enter:active{transform:translateY(0)}
+.launch-splash__hint{margin:15px 0 0;color:rgba(188,175,238,.74);font-size:12px}
+@keyframes splash-arrive{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes splash-float{50%{transform:translateY(-7px) rotate(1deg)}}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
 </style>
 </head>
 <body>
+<section id="launchSplash" class="launch-splash" role="dialog" aria-modal="true" aria-labelledby="launchSplashTitle">
+  <div class="launch-splash__content">
+    <p class="launch-splash__eyebrow">Pronti a fare centro?</p>
+    <img class="launch-splash__art" src="./icons/goose-512.png" alt="La mascotte oca di NoDarts Goose" width="512" height="512" fetchpriority="high">
+    <h1 id="launchSplashTitle" class="launch-splash__title">NoDarts Goose</h1>
+    <p class="launch-splash__tagline">La partita sta per cominciare.</p>
+    <button id="launchSplashEnter" class="launch-splash__enter" type="button">Entra nel gioco</button>
+    <p class="launch-splash__hint">Si chiude da sola tra pochi secondi</p>
+  </div>
+</section>
+<script>
+(() => {
+  const splash = document.querySelector("#launchSplash");
+  const enter = document.querySelector("#launchSplashEnter");
+  if (!splash || !enter) return;
+  const dismiss = () => {
+    if (splash.hidden || splash.classList.contains("is-leaving")) return;
+    window.clearTimeout(timer);
+    splash.classList.add("is-leaving");
+    splash.setAttribute("aria-hidden", "true");
+    splash.inert = true;
+    enter.blur();
+    window.setTimeout(() => {
+      splash.hidden = true;
+      splash.remove();
+    }, 340);
+  };
+  const timer = window.setTimeout(dismiss, 3800);
+  enter.addEventListener("click", dismiss);
+  document.addEventListener("keydown", event => {
+    if (splash.hidden || splash.classList.contains("is-leaving")) return;
+    if (event.key === "Escape") dismiss();
+    else if (event.key === "Tab") {
+      event.preventDefault();
+      enter.focus({ preventScroll: true });
+    }
+  });
+  enter.focus({ preventScroll: true });
+})();
+</script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs id="gdefs">
     <linearGradient id="rb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff3d7f"/><stop offset=".2" stop-color="#ff8c2b"/><stop offset=".4" stop-color="#ffd23f"/><stop offset=".6" stop-color="#3ee59a"/><stop offset=".8" stop-color="#33b6ff"/><stop offset="1" stop-color="#a463ff"/></linearGradient>
@@ -613,8 +669,19 @@ const nf2=n=>(isFinite(n)?n:0).toLocaleString('it-IT',{minimumFractionDigits:2,m
 const pctS=x=>Math.round((isFinite(x)?x:0)*100)+'%';
 const safeColor=c=>c==='rb'?'rb':(typeof c==='string'&&/^#[0-9a-f]{6}$/i.test(c))?c:'#ffd23f';
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
-const fmtDay=s=>{if(!s)return'';const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'});};
-const fmtWhen=iso=>{try{const d=new Date(iso);return d.toLocaleDateString('it-IT',{day:'numeric',month:'short'})+', '+d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});}catch(e){return'';}};
+function parseDay(value){
+  const raw=String(value||'').trim();
+  const match=raw.match(/^(?:(\d{4})-(\d{2})-(\d{2})|(\d{2})\/(\d{2})\/(\d{4}))$/);
+  if(!match)return '';
+  const year=Number(match[1]||match[6]),month=Number(match[2]||match[5]),day=Number(match[3]||match[4]);
+  const date=new Date(year,month-1,day);
+  if(date.getFullYear()!==year||date.getMonth()!==month-1||date.getDate()!==day)return '';
+  return `${String(year).padStart(4,'0')}-${pad2(month)}-${pad2(day)}`;
+}
+const displayDay=value=>{const day=parseDay(value);return day?`${day.slice(8,10)}/${day.slice(5,7)}/${day.slice(0,4)}`:'';};
+const dayField=(label,name,value,required=false)=>`<label>${esc(label)}<input type="text" name="${esc(name)}" inputmode="numeric" placeholder="gg/mm/aaaa" pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}" maxlength="10" title="Usa il formato giorno/mese/anno" value="${esc(displayDay(value))}" ${required?'required':''} autocomplete="off"></label>`;
+const fmtDay=displayDay;
+const fmtWhen=iso=>{try{const d=new Date(iso);if(!Number.isFinite(d.getTime()))return'';return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}, ${d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}`;}catch(e){return'';}};
 const ls={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
 ls.del('ndg-voice');ls.del('ndg-voice-last');
 /* ============ Oche: guardaroba ============ */
@@ -2053,7 +2120,7 @@ function alboPanel(){
       <div class="formgrid">
         <label>Competizione<input name="name" maxlength="40" placeholder="Torneo di Natale" required></label>
         <label>Vincitore<select name="player" required>${ps.filter(q=>q.active!==false).map(q=>`<option value="${esc(q.id)}">${esc(q.name)}</option>`).join('')}</select></label>
-        <label>Data<input type="date" name="day" value="${localDay()}" required></label>
+        ${dayField('Data','day',localDay(),true)}
       </div>
       <div class="row"><button class="btn primary">Registra e sblocca</button></div>
     </form>`:'';
@@ -2099,8 +2166,8 @@ function seasonForm(se){
     <h2 class="h2">${se?'Modifica stagione':'Nuova stagione'}</h2>
     <div class="formgrid">
       <label>Nome<input name="name" maxlength="40" value="${esc(v.name)}" required></label>
-      <label>Inizio<input type="date" name="start" value="${esc(v.start)}" required></label>
-      <label>Chiusura (facoltativa)<input type="date" name="end" value="${esc(v.end||'')}"></label>
+      ${dayField('Inizio','start',v.start,true)}
+      ${dayField('Chiusura (facoltativa)','end',v.end||'')}
       <label>Punti per vittoria<input type="number" name="pw" min="0" max="100" value="${esc(v.pw)}" required></label>
       <label>Punti per sconfitta<input type="number" name="pl" min="0" max="100" value="${esc(v.pl)}" required></label>
     </div>
@@ -2116,7 +2183,7 @@ function adjForm(se){
       <label>Giocatore<select name="player" required>${ps.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('')}</select></label>
       <label>Vittorie<input type="number" name="wins" value="1" min="-50" max="50" step="1" required></label>
       <label>Punti extra<input type="number" name="points" value="0" min="-500" max="500" step="1"></label>
-      <label>Data<input type="date" name="day" value="${localDay()}" required></label>
+      ${dayField('Data','day',localDay(),true)}
     </div>
     <label class="fl">Nota (facoltativa)<input name="note" maxlength="80" placeholder="Es. sfida al pub del giovedì"></label>
     <div class="row"><button class="btn primary">Aggiungi alla stagione</button></div>
@@ -2240,8 +2307,9 @@ const FORMS={
     const p=await addPlayer(name,pw);if(!p)return;AUTH.add(p.id);
     if(f.dataset.where==='home'){UI.modal=null;renderModal();if(!UI.setup.players.includes(p.id))ACT.togglePlayer({dataset:{id:p.id}});else render();toast(`${p.name} è in partita`);}
     else{UI.modal=null;renderModal();openDress(p);toast(`Vestite l'oca di ${p.name}`);}},
-  async addTrophy(f){const fd=new FormData(f);const name=String(fd.get('name')||'').trim().slice(0,40),pid=String(fd.get('player')||''),day=String(fd.get('day')||localDay());
+  async addTrophy(f){const fd=new FormData(f);const name=String(fd.get('name')||'').trim().slice(0,40),pid=String(fd.get('player')||''),day=parseDay(fd.get('day'));
     if(!name)return toast('Scrivi il nome della competizione');if(!S.data.players[pid])return toast('Scegli il vincitore');
+    if(!day)return toast('Inserisci una data valida nel formato gg/mm/aaaa');
     const t={id:uid(),name,playerId:pid,day,createdAt:new Date().toISOString()};
     const own=unlockState().owner,left=SPECIALS.filter(o=>!own[o.key]);t.special=left.length?left[hashStr(t.id)%left.length].key:null;
     if(await put('trophies',t)){render();}},
@@ -2252,14 +2320,16 @@ const FORMS={
     if(players().some(q=>q.id!==p.id&&q.name.toLowerCase()===name.toLowerCase()))return toast('C\'è già un giocatore con questo nome');
     const d=UI.draft;UI.editId=null;UI.draft=null;
     const ok=await put('players',{...p,name,color:safeColor(d.color),skin:normSkin(d.skin)});render();window.scrollTo(0,0);if(ok)toast(`Oca di ${name} salvata`);},
-  async saveSeason(f){const id=f.dataset.id||uid();const fd=new FormData(f);
-    const se={id,name:String(fd.get('name')).trim(),start:String(fd.get('start')),end:String(fd.get('end')||''),pw:Number(fd.get('pw'))||0,pl:Number(fd.get('pl'))||0,modes:fd.getAll('modes').map(String).filter(m=>MODES[m])};
+  async saveSeason(f){const id=f.dataset.id||uid();const fd=new FormData(f),start=parseDay(fd.get('start')),endRaw=String(fd.get('end')||''),end=endRaw?parseDay(endRaw):'';
+    const se={id,name:String(fd.get('name')).trim(),start,end,pw:Number(fd.get('pw'))||0,pl:Number(fd.get('pl'))||0,modes:fd.getAll('modes').map(String).filter(m=>MODES[m])};
     if(!se.name||!se.start)return toast('Servono nome e data di inizio');
+    if(endRaw&&!end)return toast('Inserisci una data di chiusura valida nel formato gg/mm/aaaa');
     if(se.end&&se.end<se.start)return toast('La chiusura viene prima dell\'inizio');
     if(!se.modes.length)return toast('Scegliete almeno un gioco che vale');
     const old=S.data.seasons[id];if(old&&old.createdAt)se.createdAt=old.createdAt;else se.createdAt=new Date().toISOString();
     if(await put('seasons',se)){UI.seasonEdit=null;UI.seasonSel=id;render();toast(old?'Stagione aggiornata':'Stagione creata');}},
-  async addAdj(f){const fd=new FormData(f);const a={id:uid(),seasonId:f.dataset.season,playerId:String(fd.get('player')),wins:Math.round(Number(fd.get('wins'))||0),points:Math.round(Number(fd.get('points'))||0),day:String(fd.get('day')||localDay()),note:String(fd.get('note')||'').trim().slice(0,80),createdAt:new Date().toISOString()};
+  async addAdj(f){const fd=new FormData(f);const a={id:uid(),seasonId:f.dataset.season,playerId:String(fd.get('player')),wins:Math.round(Number(fd.get('wins'))||0),points:Math.round(Number(fd.get('points'))||0),day:parseDay(fd.get('day')),note:String(fd.get('note')||'').trim().slice(0,80),createdAt:new Date().toISOString()};
+    if(!a.day)return toast('Inserisci una data valida nel formato gg/mm/aaaa');
     if(!a.wins&&!a.points)return toast('Indicate vittorie o punti diversi da zero');
     if(await put('adjust',a)){render();toast(`Aggiunto a ${pname(a.playerId)}`);}}
 };
