@@ -1,0 +1,20 @@
+{
+  "name": "NoDarts Goose",
+  "short_name": "NoDarts",
+  "description": "Segnapunti, classifiche e stagioni per le vostre partite a freccette.",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#160c31",
+  "theme_color": "#160c31",
+  "icons": [
+    {
+      "src": "./icons/goose.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
